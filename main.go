@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"github.com/gin-gonic/gin"
 	"github.com/Veoler/go-gin-url-shortener/data"
 	"github.com/Veoler/go-gin-url-shortener/models"
@@ -49,6 +50,22 @@ func UpdateLink (c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка при изменении"})
 		return
 	}
+	// Проверка на url
+	if input.URL == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Пустой формат ссылки"})
+		return		
+	}
+	_, err := url.ParseRequestURI(*input.URL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный формат ссылки"})
+		return
+	}
+	// Проверка на slug
+	if input.Slug != nil && data.IsSlugExist(*input.Slug) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ссылка с таким slug уже существует"})
+		return
+	}
+	
 	updateLink, err := data.Update(id, input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -63,6 +80,20 @@ func AddLink (c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка при добавлении: некорректные данные"})
 		return
 	}
+	if input.URL == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Пустой формат ссылки"})
+		return		
+	}
+	_, err := url.ParseRequestURI(*input.URL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный формат ссылки"})
+		return
+	}
+	if input.Slug != nil && data.IsSlugExist(*input.Slug) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ссылка с таким slug уже существует"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, data.Add(input))
 }
 

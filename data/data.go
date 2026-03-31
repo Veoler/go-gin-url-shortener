@@ -46,12 +46,12 @@ func GetBySlug(slug string) (models.Link, error) {
 func Update(id string, input models.Link) (models.Link, error) {
 	for i := range links {
 		if links[i].ID == id {
-			if input.Slug != nil { 
+			if links[i].Slug == nil {
 				links[i].Slug = input.Slug
 			}
-			if input.URL != nil { 
-				links[i].URL = input.URL 
-			}
+			if links[i].Slug == nil {
+				links[i].URL = input.URL
+			} 
 			return links[i], nil
 		}
 	}
@@ -93,3 +93,21 @@ func Redirect(slug string) error {
 	}
 	return errors.New("Slug не найден")
 }
+
+func IsSlugExist(slug string) bool {
+	for _, r := range links {
+		if r.Slug != nil && *r.Slug == slug {
+			return true
+		}
+	}
+	return false
+}
+
+// func isValidURL(raw string) bool {
+//     parsed, err := url.ParseRequestURI(raw)
+//     if err != nil {
+//         return false
+//     }
+
+//     return true
+// }
