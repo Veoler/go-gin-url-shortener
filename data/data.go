@@ -3,17 +3,17 @@ package data
 import (
 	"github.com/Veoler/go-gin-url-shortener/models"
 	"errors"
-	"strconv"
+	"net/url"
 )
 
 var links = []models.Link {
 	{
-		ID: "1",
+		ID: 1,
 		Slug: models.StrPt("course"),
 		URL: models.StrPt("https://example.com/super-long-course-url"),
 	},
 	{
-		ID: "2",
+		ID: 2,
 		Slug: models.StrPt("blog"),
 		URL: models.StrPt("https://example.com/blog"),
 	},
@@ -25,47 +25,38 @@ func GetAll() ([]models.Link, error){
 	return links, nil
 }
 
-func GetByID(id string) (models.Link, error) {
-	for _, r := range links {
-		if r.ID == id {
-			return r, nil 
-		}
-	}
-	return models.Link{}, errors.New("Ссылка с данным id не найдена")
-}
-
 func GetBySlug(slug string) (models.Link, error) {
 	for _, r := range links {
 		if *r.Slug == slug {
 			return r, nil
 		}
 	}
-	return models.Link{}, errors.New("Ссылка c данным slug не найдена")
+	return models.Link{}, errors.New("Ссылка не найдена")
 }
 
-func Update(id string, input models.Link) (models.Link, error) {
+func Update(id int, input models.Link) (models.Link, error) {
 	for i := range links {
 		if links[i].ID == id {
-			if links[i].Slug == nil {
+			if input.Slug != nil {
 				links[i].Slug = input.Slug
 			}
-			if links[i].Slug == nil {
+			if input.URL != nil {
 				links[i].URL = input.URL
 			} 
 			return links[i], nil
 		}
 	}
-	return models.Link{}, errors.New("Не возможно обновить: Ссылка с таким id не найдена")
+	return models.Link{}, errors.New("Ссылка не найдена")
 }
 
 func Add(l models.Link) models.Link {
-	l.ID = strconv.Itoa(nextID)
+	l.ID = nextID
 	nextID++
 	links = append(links, l)
 	return l 
 }
 
-func DeleteID(id string) error {
+func DeleteID(id int) error {
 	for i, d := range links {
 		if d.ID == id {
 			links = append(links[:i], links[i+1:]...)
@@ -101,6 +92,23 @@ func IsSlugExist(slug string) bool {
 		}
 	}
 	return false
+}
+
+func IsSlugExistByOther(slug string, currentID int) bool {
+    for _, r := range links {
+        if r.ID != currentID && r.Slug != nil && *r.Slug == slug {
+            return true
+        }
+    }
+    return false
+}
+
+func IsInvalidURL(u *string) bool {
+    if u == nil || *u == "" { 
+		return false 
+	}
+    _, err := url.ParseRequestURI(*u)
+    return err != nil
 }
 
 // func isValidURL(raw string) bool {
