@@ -142,11 +142,11 @@ func DeleteLinkBySlug(c *gin.Context) {
 
 func RedirectLink(c *gin.Context) {
 	slug := c.Param("slug")
-	err := data.Redirect(slug)
+	URL, err := data.Redirect(slug)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Ссылка не найдена"})
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, "")
+	c.Redirect(http.StatusMovedPermanently, URL)
 }

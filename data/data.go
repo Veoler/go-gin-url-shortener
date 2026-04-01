@@ -76,13 +76,13 @@ func DeleteSlug(slug string) error {
 	return errors.New("Slug не найден")
 }
 
-func Redirect(slug string) error {
+func Redirect(slug string) (string, error) {
 	for _, r := range links {
-		if *r.Slug == slug {
-			return nil
+		if r.Slug != nil && *r.Slug == slug {
+			return *r.URL, nil
 		}
 	}
-	return errors.New("Slug не найден")
+	return "", errors.New("Slug не найден")
 }
 
 func IsSlugExist(slug string) bool {
